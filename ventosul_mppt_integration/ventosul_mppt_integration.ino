@@ -44,6 +44,26 @@ uint8_t cmd[] = { 0xA0, 0x00, 0xB1, 0xA7, 0x7F };
 // 0x7F: indica o fim do ciclo de conferência da integridade da informação
 // Retorno: { 0xAD, 0x00, CRCH, CRCL, 0x7F }
 
+// comando A0H(leitura em tempo real dos dados coletados)
+// contéudo da sequência de dados e sequência a ser coletada
+// 1/ Battery Voltage/2 bytes/e.g. 12.5V (1250 mostrado como 0x04E2.byte baixo na frente quando enviando.
+// 2/ PV voltage /2 bytes/o mesmo de cima.
+// 3/ reservado/2 bytes/ "0" sempre.
+// 4/ Load Current/2 bytes/e.g 10.0A (1000 mostrado como 0x03E8. byte baixo na frente quando enviando.
+// 5/ Over discharge voltage/2 bytes/ o mesmo de cima.
+// 6/ battery full voltage/2bytes/ o mesmo de cima.
+// 7/ Load on ou off/1 byte/=0, load off; =1 load on.
+// 8/ Over load/1 byte/=0, normal; =1 load current over load, over load.
+// 9/ Load shot circuit/1 byte/=0, normal; =1, load short circuit, output would be stopped.
+// 10/ reservado/1 byter/ nao usado.
+// 11/ Battery overload/ 1 byte /=0,normal ; =1, sobretensão na bateria, controlador deve parar a carga e descarga.
+// 12/ Over discharge/1 byte/ =0, normal ; 1, tensão da bateria muito baixa e a saida precisa ser parada.
+// 13/ Full indicator/1 byte/ =0 , nao completamente cheio, = 1, tensão da bateria está cheia.
+// 14/ Charging indicator/1 byte/ =0, não está carregando; =1, está carregando.
+// 15/ Battery temp/1 byte/e.g, 25°C(55 mostrado como 0x37, há 30 diferenças de valor com o valor real.
+// 16/ Charging current/ 2 byte/ e.g. 10.0A(1000 mostrado como 0x03E8. Byte baixo na frente quando enviando.
+// 17/ reservedo/1 byte/ 0 
+
 // Variável de buffer para o recebimento das informações do MPPT
 uint8_t buff[128];
 
