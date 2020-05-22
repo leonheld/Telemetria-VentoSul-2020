@@ -5,6 +5,18 @@
 #include <LiquidCrystal.h>
 #include <String.h>
 #include "Variaveis.h"
+#include <mcp2515.h>
+#include <SPI.h>
+
+
+MCP2515 mcp2515(10);
+struct can_frame BMV_Voltage;
+struct can_frame BMV_StartedVoltage;
+struct can_frame BMV_Current;
+struct can_frame BMV_ConsumedEnergy;
+struct can_frame BMV_StateOfCharge;
+struct can_frame BMV_TimeToGo;
+
 
 void setup() {
   // Inicia a porta Serial de comunicação com o BMV 
@@ -14,6 +26,9 @@ void setup() {
   // Inicia o objeto LCD
   lcd.begin(16, 2);
 
+  mcp2515.reset();
+  mcp2515.setBitrate(CAN_125KBPS);
+  mcp2515.setLoopbackMode();
 }
 
 void loop() {
@@ -102,6 +117,66 @@ e chama a função BMVSetValues para cada par
   String name = s.substring(startIndex,endIndex);
   String value = s.substring(endIndex + 1, s.length());
   BMVSetValues(name , charToFloat(value));
+  Do_SendCANFrame(name, value);
+
+}
+//==============================================================================================//
+
+//==============================================================================================//
+void Do_SendCANFrame(String label, String data){
+
+  char tmp[data.length()];
+  data.toCharArray(tmp,data.length());
+  uint8_t data_length = data.length(); 
+
+  if (label = "V"){
+    BMV_Voltage.can_id  = 0x033;
+    BMV_Voltage.can_dlc = data_length;
+    for(int i =0; i > data_length; i++){
+      BMV_Voltage.data[i] = tmp[i];
+    }
+  }
+
+  if (label = "VS"){
+    BMV_StartedVoltage.can_id  = 0x034;
+    BMV_StartedVoltage.can_dlc = data_length;
+    for(int i =0; i > data_length; i++){
+      BMV_StartedVoltage.data[i] = tmp[i];
+    }
+  }
+
+  if (label = "I"){
+    BMV_Current.can_id  = 0x035;
+    BMV_Current.can_dlc = data_length;
+    for(int i =0; i > data_length; i++){
+      BMV_Current.data[i] = tmp[i];
+    }
+  }
+
+  if (label = "CE"){
+    BMV_ConsumedEnergy.can_id  = 0x036;
+    BMV_ConsumedEnergy.can_dlc = data_length;
+    for(int i =0; i > data_length; i++){
+      BMV_ConsumedEnergy.data[i] = tmp[i];
+    }
+  }
+
+  if (label = "SOC"){
+    BMV_StateOfCharge.can_id  = 0x037;
+    BMV_StateOfCharge.can_dlc = data_length;
+    for(int i =0; i > data_length; i++){
+      BMV_StateOfCharge.data[i] = tmp[i];
+    }
+  }
+
+  if (label = "TTG"){
+    BMV_TimeToGo.can_id  = 0x038;
+    BMV_TimeToGo.can_dlc = data_length;
+    for(int i =0; i > data_length; i++){
+      BMV_TimeToGo.data[i] = tmp[i];
+    }
+  }
+else;
 }
 //==============================================================================================//
 
