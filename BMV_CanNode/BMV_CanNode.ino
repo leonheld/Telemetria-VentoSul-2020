@@ -8,8 +8,13 @@
 #include <mcp2515.h>
 #include <SPI.h>
 
-
+/*
+Inicia o objeto mcp2515 com o Pino de CS da
+comunicação SPI sendo o pino digital 10
+*/
 MCP2515 mcp2515(10);
+
+// Cria os frames CAN e define seus endereços
 struct can_frame BMV_Voltage;
 struct can_frame BMV_StartedVoltage;
 struct can_frame BMV_Current;
@@ -26,9 +31,12 @@ void setup() {
   // Inicia o objeto LCD
   lcd.begin(16, 2);
 
+  // Reseta os registradores do MCP2515
   mcp2515.reset();
-  mcp2515.setBitrate(CAN_125KBPS);
-  mcp2515.setLoopbackMode();
+  // Define a velocidade de transmissão para 500Kbps
+  mcp2515.setBitrate(CAN_500KBPS);
+  // Define o modo de operação como Normal(Receiver/Transmitter)
+  mcp2515.setNormalMode();
   
   attachInterrupt(0, irqCounter, FALLING);
 }
@@ -37,12 +45,19 @@ void loop() {
   /* 
   Caso não existam erros em BMVSerialString, executa 
   a cadeia de funções que processa os dados recebidos 
-  pela porta Serial e os armazena em BMVValues
+  pela porta Serial
   */ 
   if(BMVDataIntegrity()){
     BMVDataProcess(BMVSerialString,BMVReceivedBytes);
     BMVStringComplete = false;
-    //printDataToLCD();
+    printDataToLCD();
+
+    /*
+    Verifica se os outros arduinos ligados a rede ja enviaram
+    suas mensagens para o CAN BUS, completando um ciclo inteiro
+    de aquisição de dados, caso tenha sido completado, inicia
+    a transmissão novamente
+    */
     if(interruptCounter > 13){
       interruptCounter = 0;
       mcp2515.sendMessage(&BMV_Voltage);
@@ -68,6 +83,10 @@ void loop() {
 
 //==============================================================================================//
 void irqCounter(){
+  /*
+  Por meio de interrupções conta quantas mensagens ja foram 
+  recebidas do CAN BUS desde a ultima trasmissão
+  */
   interruptCounter++;
 }
 //==============================================================================================//
@@ -132,7 +151,7 @@ Quebra o vetor de dados em cada \n e chama a função BMVGetValues
 void BMVGetValues(String s){
 /*
 Identifica o nome e o valor presente em cada linha recebida de BMVDataProcess
-e chama a função BMVSetValues para cada par
+e chama as funções BMVSetValues e DoCanFrame para cada par
 */
   int startIndex = 0;
   int endIndex = 0;
@@ -147,6 +166,10 @@ e chama a função BMVSetValues para cada par
 
 //==============================================================================================//
 void DoCANFrame(String label, String data){
+/*
+Identidica o nome de cada valor presente em cada linha recebida de BMVDataProcess
+e escreve no frame correspondente
+*/
 
   char tmp[data.length()];
   data.toCharArray(tmp,data.length());
