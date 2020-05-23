@@ -20,6 +20,7 @@ const int BMVValSIZE = 6;
 float BMVValues[BMVValSIZE];
 // Array que contém os nomes de cada dado contido em BMVValues
 String BMVlabel[BMVValSIZE]={"V","VS","I","CE","SOC","TTG"};
-
+// Tempo entre dois envios de informação para o CAN Bus
+unsigned int interruptCounter = 0;
 
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);

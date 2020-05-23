@@ -29,6 +29,8 @@ void setup() {
   mcp2515.reset();
   mcp2515.setBitrate(CAN_125KBPS);
   mcp2515.setLoopbackMode();
+  
+  attachInterrupt(0, irqCounter, FALLING);
 }
 
 void loop() {
@@ -40,13 +42,34 @@ void loop() {
   if(BMVDataIntegrity()){
     BMVDataProcess(BMVSerialString,BMVReceivedBytes);
     BMVStringComplete = false;
-    printDataToLCD();
-  };
+    //printDataToLCD();
+    if(interruptCounter > 13){
+      interruptCounter = 0;
+      mcp2515.sendMessage(&BMV_Voltage);
+      delay(10);
+      mcp2515.sendMessage(&BMV_StartedVoltage);
+      delay(10);
+      mcp2515.sendMessage(&BMV_Current);
+      delay(10);
+      mcp2515.sendMessage(&BMV_ConsumedEnergy);
+      delay(10);
+      mcp2515.sendMessage(&BMV_StateOfCharge);
+      delay(10);
+      mcp2515.sendMessage(&BMV_TimeToGo);
+      delay(10);
+    }
+  }
 
 }
 
 //==============================================================================================//
 //====================================Declaração das funções====================================//
+//==============================================================================================//
+
+//==============================================================================================//
+void irqCounter(){
+  interruptCounter++;
+}
 //==============================================================================================//
 
 //==============================================================================================//
@@ -117,13 +140,13 @@ e chama a função BMVSetValues para cada par
   String name = s.substring(startIndex,endIndex);
   String value = s.substring(endIndex + 1, s.length());
   BMVSetValues(name , charToFloat(value));
-  Do_SendCANFrame(name, value);
+  DoCANFrame(name, value);
 
 }
 //==============================================================================================//
 
 //==============================================================================================//
-void Do_SendCANFrame(String label, String data){
+void DoCANFrame(String label, String data){
 
   char tmp[data.length()];
   data.toCharArray(tmp,data.length());
