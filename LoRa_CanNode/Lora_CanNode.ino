@@ -87,18 +87,18 @@ void loop(){
     Atribui o ID da mensagem recebida da rede CAN 
     aos quatro primeiros bytes do Buffer do LoRa
     */
-    bufferPayload[0] = canMsg.can_id() >> 24;
-    bufferPayload[1] = canMsg.can_id() >> 16;
-    bufferPayload[2] = canMsg.can_id() >> 8;
-    bufferPayload[3] = canMsg.can_id();
+    bufferPayload[0] = canMsg.can_id >> 24;
+    bufferPayload[1] = canMsg.can_id >> 16;
+    bufferPayload[2] = canMsg.can_id >> 8;
+    bufferPayload[3] = canMsg.can_id;
     
     // Transfere os bytes de dados de canMsg para o Buffer do LoRa
-    for(int i = 4 , i < canMsg.can_dlc() + 4, i++){
+    for(int i = 4 , i < canMsg.can_dlc + 4, i++){
         bufferPayload[i] = canMsg.data[i];
     }
 
     // Prepara o Frame do LoRa com as informações contidas no buffer
-      PrepareFrameCommand(localId, CMD_ANALOG, bufferPayload, canMsg.can_dlc() + 4);
+      PrepareFrameCommand(localId, CMD_ANALOG, bufferPayload, canMsg.can_dlc + 4);
     // Envia o Frame via LoRa
       SendPacket();
 }
