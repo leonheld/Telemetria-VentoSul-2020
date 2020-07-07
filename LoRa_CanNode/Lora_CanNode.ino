@@ -93,7 +93,7 @@ void loop(){
     bufferPayload[3] = canMsg.can_id;
     
     // Transfere os bytes de dados de canMsg para o Buffer do LoRa
-    for(int i = 4 , i < canMsg.can_dlc + 4, i++){
+    for(int i = 4 ; i < canMsg.can_dlc + 4; i++){
         bufferPayload[i] = canMsg.data[i];
     }
 
