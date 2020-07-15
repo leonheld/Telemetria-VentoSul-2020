@@ -2,17 +2,27 @@
  * 
  */
 
-#include <LiquidCrystal.h>
+//#include <LiquidCrystal.h>
 #include <String.h>
 #include "Variaveis.h"
 #include <mcp2515.h>
 #include <SPI.h>
+#include <SoftwareSerial.h>
+
+// Quantidade de mensagens de outros nós entre transmissões locais
+const unsigned int total_messages;
 
 /*
 Inicia o objeto mcp2515 com o Pino de CS da
 comunicação SPI sendo o pino digital 10
 */
 MCP2515 mcp2515(10);
+
+/*
+Cria uma porta Serial emulada via software
+para comunicação com o BMV
+*/
+SoftwareSerial BMV_Serial(2,3)
 
 // Cria os frames CAN e define seus endereços
 struct can_frame BMV_Voltage;
@@ -25,11 +35,11 @@ struct can_frame BMV_TimeToGo;
 
 void setup() {
   // Inicia a porta Serial de comunicação com o BMV 
-  Serial.begin(19200);
+  BMV_Serial.begin(19200);
   // Define o timeout da porta Serial para 10 milissegundos
-  Serial.setTimeout(10);
+  BMV_Serial.setTimeout(10);
   // Inicia o objeto LCD
-  lcd.begin(16, 2);
+  //lcd.begin(16, 2);
 
   // Reseta os registradores do MCP2515
   mcp2515.reset();
@@ -38,7 +48,7 @@ void setup() {
   // Define o modo de operação como Normal(Receiver/Transmitter)
   mcp2515.setNormalMode();
   
-  attachInterrupt(0, irqCounter, FALLING);
+  attachInterrupt(digitalPinToInterrupt(2), irqCounter, FALLING);
 }
 
 void loop() {
@@ -58,7 +68,7 @@ void loop() {
     de aquisição de dados, caso tenha sido completado, inicia
     a transmissão novamente
     */
-    if(interruptCounter > 13){
+    if(interruptCounter > total_messages){
       interruptCounter = 0;
       mcp2515.sendMessage(&BMV_Voltage);
       delay(10);
@@ -75,6 +85,9 @@ void loop() {
     }
   }
 
+  if(BMV_Serial.available()){
+    BMV_SerialEvent()
+  }
 }
 
 //==============================================================================================//
@@ -82,22 +95,22 @@ void loop() {
 //==============================================================================================//
 
 //==============================================================================================//
-void irqCounter(){
-  /*
+/*
   Por meio de interrupções conta quantas mensagens ja foram 
   recebidas do CAN BUS desde a ultima trasmissão
   */
-  interruptCounter++;
+void irqCounter(){
+    interruptCounter++;
 }
 //==============================================================================================//
 
 //==============================================================================================//
-void serialEvent() {
 /* 
-Função executada antes de cada loop() que 
+Função executada no fim de cada loop() que 
 verifica se existem dados no buffer da porta
 serial e os armazena em BMVSerialString
 */
+void BMV_SerialEvent() {
   while(Serial.available()){
     BMVReceivedBytes = Serial.readBytes(BMVSerialString,140);
     BMVStringComplete = true;
@@ -107,12 +120,12 @@ serial e os armazena em BMVSerialString
 //==============================================================================================//
 
 //==============================================================================================//
-boolean BMVDataIntegrity(){
 /*
 Confere a integridade dos dados recebidos pela porta Serial
 pelo checksum, se a soma de todos os dados recebidos pela porta
 Serial for divisível por 256, não existem erros 
 */
+boolean BMVDataIntegrity(){
   if(BMVStringComplete){
     checksum = 0;
     for(volatile int i = 0 ; i < BMVReceivedBytes ; i++){
@@ -127,11 +140,11 @@ Serial for divisível por 256, não existem erros
 //==============================================================================================//
 
 //==============================================================================================//
-void BMVDataProcess(String s, int receivedBytes){
 /*
 OBS: BMVSerialString tem os dados no formato: <\n><Label><\t><Value>
 Quebra o vetor de dados em cada \n e chama a função BMVGetValues
 */
+void BMVDataProcess(String s, int receivedBytes){
   int startIndex = 2;
   int endIndex = 3;
   String line = "";
@@ -148,11 +161,11 @@ Quebra o vetor de dados em cada \n e chama a função BMVGetValues
 //==============================================================================================//
 
 //==============================================================================================//
-void BMVGetValues(String s){
 /*
 Identifica o nome e o valor presente em cada linha recebida de BMVDataProcess
 e chama as funções BMVSetValues e DoCanFrame para cada par
 */
+void BMVGetValues(String s){
   int startIndex = 0;
   int endIndex = 0;
   endIndex  = s.indexOf("\t",startIndex);
@@ -165,12 +178,11 @@ e chama as funções BMVSetValues e DoCanFrame para cada par
 //==============================================================================================//
 
 //==============================================================================================//
-void DoCANFrame(String label, String data){
 /*
 Identidica o nome de cada valor presente em cada linha recebida de BMVDataProcess
 e escreve no frame correspondente
 */
-
+void DoCANFrame(String label, String data){
   char tmp[data.length()];
   data.toCharArray(tmp,data.length());
   uint8_t data_length = data.length(); 
@@ -227,10 +239,10 @@ else;
 //==============================================================================================//
 
 //==============================================================================================//
-void BMVSetValues(String label, float value){
 /*
 Verifica em qual posição do Array BMVValues deve ir o dados e armazena nele
 */
+void BMVSetValues(String label, float value){
   if (label == "V")         BMVValues[V]   = value;
   else if (label == "VS")   BMVValues[VS]  = value;
   else if (label == "I" )   BMVValues[I]   = value;
@@ -243,10 +255,10 @@ Verifica em qual posição do Array BMVValues deve ir o dados e armazena nele
 //==============================================================================================//
 
 //==============================================================================================//
-inline float charToFloat(String value){
 /*
 Converte value de BMVGetValues de String para float
 */
+inline float charToFloat(String value){
   char tmp[value.length()];
   // Converte de String para vetor de caracteres
   value.toCharArray(tmp,value.length());
@@ -256,12 +268,12 @@ Converte value de BMVGetValues de String para float
 //==============================================================================================//
 
 //==============================================================================================//
-void printDataToLCD(){
 /*
 Imprime os dados do BMV no display LCD 
 [Isso está aqui apenas para teste, na versão final essa função nao existe]
 [Estou printando apenas Tensão e Corrente]
 */
+void printDataToLCD(){
   lcd.clear();
   
   lcd.setCursor(0,0);
