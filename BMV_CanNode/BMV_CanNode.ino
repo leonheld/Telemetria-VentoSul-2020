@@ -22,7 +22,7 @@ MCP2515 mcp2515(10);
 Cria uma porta Serial emulada via software
 para comunicação com o BMV
 */
-SoftwareSerial BMV_Serial(2,3);
+SoftwareSerial BMV_Serial(4,5);
 
 // Cria os frames CAN e define seus endereços
 struct can_frame BMV_Voltage;
@@ -190,7 +190,7 @@ void DoCANFrame(String label, String data){
   if (label = "V"){
     BMV_Voltage.can_id  = 0x033;
     BMV_Voltage.can_dlc = data_length;
-    for(int i =0; i > data_length; i++){
+    for(int i =0; i < data_length; i++){
       BMV_Voltage.data[i] = tmp[i];
     }
   }
@@ -198,7 +198,7 @@ void DoCANFrame(String label, String data){
   if (label = "VS"){
     BMV_StartedVoltage.can_id  = 0x034;
     BMV_StartedVoltage.can_dlc = data_length;
-    for(int i =0; i > data_length; i++){
+    for(int i =0; i < data_length; i++){
       BMV_StartedVoltage.data[i] = tmp[i];
     }
   }
@@ -206,7 +206,7 @@ void DoCANFrame(String label, String data){
   if (label = "I"){
     BMV_Current.can_id  = 0x035;
     BMV_Current.can_dlc = data_length;
-    for(int i =0; i > data_length; i++){
+    for(int i =0; i < data_length; i++){
       BMV_Current.data[i] = tmp[i];
     }
   }
@@ -214,7 +214,7 @@ void DoCANFrame(String label, String data){
   if (label = "CE"){
     BMV_ConsumedEnergy.can_id  = 0x036;
     BMV_ConsumedEnergy.can_dlc = data_length;
-    for(int i =0; i > data_length; i++){
+    for(int i =0; i < data_length; i++){
       BMV_ConsumedEnergy.data[i] = tmp[i];
     }
   }
@@ -222,7 +222,7 @@ void DoCANFrame(String label, String data){
   if (label = "SOC"){
     BMV_StateOfCharge.can_id  = 0x037;
     BMV_StateOfCharge.can_dlc = data_length;
-    for(int i =0; i > data_length; i++){
+    for(int i =0; i < data_length; i++){
       BMV_StateOfCharge.data[i] = tmp[i];
     }
   }
@@ -230,7 +230,7 @@ void DoCANFrame(String label, String data){
   if (label = "TTG"){
     BMV_TimeToGo.can_id  = 0x038;
     BMV_TimeToGo.can_dlc = data_length;
-    for(int i =0; i > data_length; i++){
+    for(int i =0; i < data_length; i++){
       BMV_TimeToGo.data[i] = tmp[i];
     }
   }

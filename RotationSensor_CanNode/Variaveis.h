@@ -28,3 +28,5 @@ unsigned long RPM;
 unsigned int Ciclos_atuais = 0; 
 
 unsigned long Tempo_Total;
+
+volatile int interruptCounter;
