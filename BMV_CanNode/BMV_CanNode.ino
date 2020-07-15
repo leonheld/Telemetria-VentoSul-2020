@@ -22,7 +22,7 @@ MCP2515 mcp2515(10);
 Cria uma porta Serial emulada via software
 para comunicação com o BMV
 */
-SoftwareSerial BMV_Serial(2,3)
+SoftwareSerial BMV_Serial(2,3);
 
 // Cria os frames CAN e define seus endereços
 struct can_frame BMV_Voltage;
@@ -60,7 +60,7 @@ void loop() {
   if(BMVDataIntegrity()){
     BMVDataProcess(BMVSerialString,BMVReceivedBytes);
     BMVStringComplete = false;
-    printDataToLCD();
+    //printDataToLCD();
 
     /*
     Verifica se os outros arduinos ligados a rede ja enviaram
@@ -86,7 +86,7 @@ void loop() {
   }
 
   if(BMV_Serial.available()){
-    BMV_SerialEvent()
+    BMV_SerialEvent();
   }
 }
 
@@ -273,6 +273,7 @@ Imprime os dados do BMV no display LCD
 [Isso está aqui apenas para teste, na versão final essa função nao existe]
 [Estou printando apenas Tensão e Corrente]
 */
+/*
 void printDataToLCD(){
   lcd.clear();
   
@@ -286,3 +287,4 @@ void printDataToLCD(){
   lcd.setCursor(3,1);
   lcd.print(BMVValues[I]);
 }
+*/

@@ -31,4 +31,4 @@ String BMVlabel[BMVValSIZE]={"V","VS","I","CE","SOC","TTG"};
 unsigned int interruptCounter = 0;
 
 // Define os pinos onde o Display LCD está conectado
-LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+//LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
