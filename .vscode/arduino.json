@@ -1,0 +1,7 @@
+{
+    "programmer": "AVR ISP",
+    "board": "arduino:avr:nano",
+    "configuration": "cpu=atmega328",
+    "port": "COM1",
+    "sketch": "Em Terra\\LoRa_Reciever\\LoRa_Reciever.ino"
+}

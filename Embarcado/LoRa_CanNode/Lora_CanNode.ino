@@ -113,14 +113,19 @@ void loop(){
     enviado para o Módulo LoRa
     */
     for(int i = 4 ; i < canMsg.can_dlc + 4; i++){
-        bufferPayload[i] = canMsg.data[i];
+        bufferPayload[i] = canMsg.data[i-4];
     }
 
     /*
     Prepara o Frame a ser enviado para o Módulo LoRa com as
     informações contidas no buffer
     */
-      PrepareFrameCommand(localId, #define CMD_INTERFACE 55, bufferPayload, canMsg.can_dlc + 4);
+      PrepareFrameCommand(
+        localId, 
+        CMD_INTERFACE,
+        bufferPayload, 
+        canMsg.can_dlc + 4);
+        
     /* Envia o Frame para o Módulo LoRa */
       SendPacket();
 }
