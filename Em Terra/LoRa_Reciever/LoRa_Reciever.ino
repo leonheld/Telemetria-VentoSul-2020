@@ -8,54 +8,64 @@
 #include <stdbool.h>
 
 
-/* Defines ----------------------- */
-#define CMD_ANALOG  50
+/* =========================================================== */
+/*  
+ Define o comando de confirmação de recebimento à ser enviado
+ para o Módulo LoRa embarcado
+ */
+#define CMD_INTERFACE 50
+/* =========================================================== */
 
-/* Payload buffer */
+//* =========================================================== */
+/* Buffer para o envio da mensagem via LoRa  */
 uint8_t bufferPayload[MAX_PAYLOAD_SIZE] = {0};
+/* Tamanho do bufferPayload */
 uint8_t payloadSize = 0;
-
-/* Local device ID */
+/* ID do Módulo LoRa conectado ao Arduino */
 uint16_t localId;
-
-/* Remote device ID */
+/* ID do Módulo LoRa que enviou a mensagem */
 uint16_t remoteId;
-
-/* Local device Unique ID */
+/* ID Único do Módulo LoRa conectado ao Arduino */
 uint32_t localUniqueId;
-
-/* Local device Net */
+/* Rede do Módulo LoRa conectado ao Arduino */
 uint16_t localNet;
-
-/* Received command */
-uint8_t command;
-
-/* SoftwareSerial handles */
+/* Faz a ligação da função SoftwareSerial à serial de comandos
+do Módulo LoRa ligado ao Arduino */
 SoftwareSerial* hSerialCommands = NULL;
+/* =========================================================== */
 
-/* Initialization routine */
+/* Função de configuração do Arduino */ 
+/* =========================================================== */
 void setup() {
-  delay(1000);
-  Serial.begin(9600); /* Initialize monitor serial */
+    /* Tempo de espera para que o Módulo LoRa Inicialize */
+    delay(1000);
+    /* 
+     Inicializa o Monitor Serial para comunicação com o Software
+     no computador conectado
+    */
+    Serial.begin(9600);
   
-  /* Initialize SoftwareSerial */
-  hSerialCommands = SerialCommandsInit(7, 6, 9600);
+    /* Inicializa a Serial de Comandos com o Módulo LoRa */
+    hSerialCommands = SerialCommandsInit(7, 6, 9600);
 
-  /* Gets the local device ID */
-  if(LocalRead(&localId, &localNet, &localUniqueId) != MESH_OK)
-    Serial.print("Couldn't read local ID\n\n");
-  else
-  {
-    Serial.print("Local ID: ");
-    Serial.println(localId);
-    Serial.print("Local NET: ");
-    Serial.println(localNet);
-    Serial.print("Local Unique ID: ");
-    Serial.println(localUniqueId, HEX);
-    Serial.print("\n");
-  }
+    /*
+    Tenta ler ID, Rede e ID Único do módulo e retorna estes
+    parametros ou uma mensagem de erro
+    */
+    if(LocalRead(&localId, &localNet, &localUniqueId) != MESH_OK)
+        Serial.print("Couldn't read local ID\n\n");
+    else
+    {
+        Serial.print("Local ID: ");
+        Serial.println(localId);
+        Serial.print("Local NET: ");
+        Serial.println(localNet);
+        Serial.print("Local Unique ID: ");
+        Serial.println(localUniqueId, HEX);
+        Serial.print("\n");
+    }
 
-}
+    }
 
 /* Main loop */
 void loop() {

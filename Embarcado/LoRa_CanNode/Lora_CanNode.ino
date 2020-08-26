@@ -10,38 +10,50 @@
 #include <SPI.h>
 #include <mcp2515.h>
 
-
-// Cria o frame para armazenar a mensagem recebida da Rede CAN
+/* =========================================================== */
+/*  Cria o frame para armazenar a mensagem recebida do CAN BUS */
 struct can_frame canMsg;
-
 /*
-Inicia o objeto mcp2515 com o Pino de CS da
-comunicação SPI sendo o pino digital 10
+ Inicia o objeto mcp2515 com o Pino de CS da  comunicação SPI
+ sendo o pino digital 10
 */
 MCP2515 mcp2515(10);
+/* =========================================================== */
 
-// Defines e declarações para funcionamento do Módulo LoRa
-#define CMD_ANALOG  50
-/* Payload buffer */
+
+/* =========================================================== */
+/*  
+ Define o comando de interface entre o CAN BUS e o Módulo LoRa
+ a ser enviado para o módulo LoRa pela serial do Arduino
+ */
+#define CMD_INTERFACE 50
+/* =========================================================== */
+
+
+/* =========================================================== */
+/* Buffer para o envio da mensagem via LoRa  */
 uint8_t bufferPayload[MAX_PAYLOAD_SIZE] = {0};
+/* Tamanho do bufferPayload */
 uint8_t payloadSize = 0;
-/* Local device ID */
+/* ID do Módulo LoRa conectado ao Arduino */
 uint16_t localId;
-/* Remote device ID */
+/* ID do Módulo LoRa que enviou a mensagem */
 uint16_t remoteId;
-/* Local device Unique ID */
+/* ID Único do Módulo LoRa conectado ao Arduino */
 uint32_t localUniqueId;
-/* Local device Net */
+/* Rede do Módulo LoRa conectado ao Arduino */
 uint16_t localNet;
-/* Received command */
-uint8_t command;
-/* SoftwareSerial handles */
+/* Faz a ligação da função SoftwareSerial à serial de comandos
+do Módulo LoRa ligado ao Arduino */
 SoftwareSerial* hSerialCommands = NULL;
+/* =========================================================== */
 
 
+/* Função de configuração do Arduino */
+/* =========================================================== */
 void setup() {
   
-  // Inicializa a porta serial para Debug
+  /* Inicializa a porta serial para Debug */ 
   Serial.begin(9600);
 
   /*
@@ -50,55 +62,66 @@ void setup() {
   */
   hSerialCommands = SerialCommandsInit(7, 6, 9600);
 
-  // Reseta os registradores do MCP2515
+  /* Reseta os registradores do MCP2515 */
   mcp2515.reset();
-  // Define a velocidade de transmissão para 500Kbps
+  /* Define a velocidade de transmissão para 500Kbps */
   mcp2515.setBitrate(CAN_500KBPS);
-  // Define o modo de operação como Normal(Receiver/Transmitter)
+  /* Define o modo de operação como Normal(Recebe/Envia) */
   mcp2515.setNormalMode();
-
-    /*
-    Tenta ler ID, Rede e ID Único do módulo e caso não seja possível
-    mostra no monitor serial
-    */
+  
+  /*
+  Tenta ler ID, Rede e ID Único do módulo e retorna estes
+  parametros ou uma mensagem de erro
+  */
   if(LocalRead(&localId, &localNet, &localUniqueId) != MESH_OK)
-    Serial.print("Couldn't read local module info\n\n");
+    Serial.print("Não foi possivel ler as informações do módulo\n\n");
   else
   {
-    Serial.print("Local ID: ");
+    Serial.print("ID Local: ");
     Serial.println(localId);
-    Serial.print("Local NET: ");
+    Serial.print("Rede: ");
     Serial.println(localNet);
-    Serial.print("Local Unique ID: ");
+    Serial.print("ID Unico: ");
     Serial.println(localUniqueId, HEX);
     Serial.print("\n");
   }
 }
+/* =========================================================== */
 
-
+/* Função que rodará enquanto o Arduino estiver ligado */
+/* =========================================================== */
 void loop(){
-    // Lê a mensagem no CAN BUS e armazena no Struct canMsg
+     /* Lê a mensagem no CAN BUS e armazena em canMsg */
     if(mcp2515.readMessage(&canMsg) == MCP2515::ERROR_OK){
-        // Caso tudo corra bem nessa leitura mostra no monitor serial
+        /*
+        Caso tudo corra bem nessa leitura mostra no monitor serial
+         */
         Serial.print("Mensagem recebida com sucesso");
     }
     
     /*  
-    Atribui o ID da mensagem recebida da rede CAN 
-    aos quatro primeiros bytes do Buffer do LoRa
+    Atribui o ID da mensagem recebida da rede CAN  aos quatro
+    primeiros bytes do Buffer a ser enviado para o Módulo LoRa
     */
     bufferPayload[0] = canMsg.can_id >> 24;
     bufferPayload[1] = canMsg.can_id >> 16;
     bufferPayload[2] = canMsg.can_id >> 8;
     bufferPayload[3] = canMsg.can_id;
     
-    // Transfere os bytes de dados de canMsg para o Buffer do LoRa
+    /*
+    Transfere os bytes de dados de canMsg para o Buffer a ser
+    enviado para o Módulo LoRa
+    */
     for(int i = 4 ; i < canMsg.can_dlc + 4; i++){
         bufferPayload[i] = canMsg.data[i];
     }
 
-    // Prepara o Frame do LoRa com as informações contidas no buffer
-      PrepareFrameCommand(localId, CMD_ANALOG, bufferPayload, canMsg.can_dlc + 4);
-    // Envia o Frame via LoRa
+    /*
+    Prepara o Frame a ser enviado para o Módulo LoRa com as
+    informações contidas no buffer
+    */
+      PrepareFrameCommand(localId, #define CMD_INTERFACE 55, bufferPayload, canMsg.can_dlc + 4);
+    /* Envia o Frame para o Módulo LoRa */
       SendPacket();
 }
+/* =========================================================== */
